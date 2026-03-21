@@ -74,14 +74,23 @@ export default function SettlementResult({ participants, expenses }) {
 
     const handleDownload = async () => {
         if (!printRef.current) return;
+
+        // 儲存原始玻璃樣式
+        const originalBg = printRef.current.style.background;
+        const originalBorder = printRef.current.style.border;
+
         try {
-            // 稍微延迟让UI稳定后再截屏
+            // 匯出前將背景替換為較亮且無玻璃透視的漸層，避免 html2canvas 處理透明度疊加時導致圖片太暗
+            printRef.current.style.background = 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)';
+            printRef.current.style.border = 'none';
+
             const canvas = await html2canvas(printRef.current, {
                 scale: 2,
-                backgroundColor: '#0f172a', // 使用深色背景确保渲染正确
+                backgroundColor: '#0f172a',
                 logging: false,
                 useCORS: true
             });
+
             const dataUrl = canvas.toDataURL('image/png');
             const link = document.createElement('a');
             link.download = 'expense-summary.png';
@@ -90,6 +99,10 @@ export default function SettlementResult({ participants, expenses }) {
         } catch (err) {
             console.error('Failed to export image', err);
             alert('匯出圖片發生錯誤');
+        } finally {
+            // 匯出後立即復原原本介面漂亮的玻璃擬物樣式
+            printRef.current.style.background = originalBg;
+            printRef.current.style.border = originalBorder;
         }
     };
 
