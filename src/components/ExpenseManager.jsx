@@ -5,6 +5,7 @@ import { Plus, X, Receipt } from 'lucide-react';
 export default function ExpenseManager({ participants, expenses, setExpenses }) {
     const [title, setTitle] = useState('');
     const [amount, setAmount] = useState('');
+    const [currency, setCurrency] = useState('HKD');
     const [payerId, setPayerId] = useState('');
     const [involvedIds, setInvolvedIds] = useState([]);
 
@@ -32,6 +33,7 @@ export default function ExpenseManager({ participants, expenses, setExpenses }) 
             id: uuidv4(),
             title: title.trim(),
             amount: parseFloat(amount),
+            currency: currency,
             payerId,
             involvedIds
         };
@@ -74,13 +76,22 @@ export default function ExpenseManager({ participants, expenses, setExpenses }) 
                         className="input-field"
                         style={{ flex: '1 1 200px' }}
                     />
+                    <select
+                        value={currency}
+                        onChange={(e) => setCurrency(e.target.value)}
+                        className="select-field"
+                        style={{ width: '90px', flex: '0 0 auto', padding: '0.875rem 0.6rem' }}
+                    >
+                        <option value="HKD">HKD</option>
+                        <option value="RMB">RMB</option>
+                    </select>
                     <input
                         type="number"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        placeholder="金額 ($)"
+                        placeholder="金額"
                         className="input-field"
-                        style={{ flex: '0 0 120px' }}
+                        style={{ flex: '0 0 100px' }}
                         min="0"
                         step="0.01"
                     />
@@ -139,7 +150,7 @@ export default function ExpenseManager({ participants, expenses, setExpenses }) 
                                 <div className="flex-between" style={{ width: '100%' }}>
                                     <div className="flex-row">
                                         <strong style={{ fontSize: '1.1rem' }}>{e.title}</strong>
-                                        <span className="badge">${e.amount.toFixed(2)}</span>
+                                        <span className="badge">{e.currency === 'RMB' ? '¥' : 'HK$'}{e.amount.toFixed(2)} {e.currency}</span>
                                     </div>
                                     <button onClick={() => removeExpense(e.id)} className="btn-danger" aria-label="Remove">
                                         <X size={18} />

@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { Download, Calculator, ArrowRight } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
-export default function SettlementResult({ participants, expenses }) {
+export default function SettlementResult({ participants, expenses, exchangeRate = 1.08 }) {
     const printRef = useRef(null);
 
     if (participants.length === 0 || expenses.length === 0) {
@@ -16,13 +16,16 @@ export default function SettlementResult({ participants, expenses }) {
     }, {});
 
     expenses.forEach(expense => {
-        const { amount, payerId, involvedIds } = expense;
+        const { amount, currency, payerId, involvedIds } = expense;
+        // 將外幣換算為 HKD 基礎貨幣
+        const actualAmount = currency === 'RMB' ? amount * exchangeRate : amount;
+
         // 付款人增加已付金额
         if (balances[payerId]) {
-            balances[payerId].paid += amount;
+            balances[payerId].paid += actualAmount;
         }
         // 参与者增加应付金额
-        const splitAmount = amount / involvedIds.length;
+        const splitAmount = actualAmount / involvedIds.length;
         involvedIds.forEach(id => {
             if (balances[id]) {
                 balances[id].share += splitAmount;
@@ -116,7 +119,7 @@ export default function SettlementResult({ participants, expenses }) {
                 <div className="flex-row title" style={{ justifyContent: 'center', marginBottom: '2rem' }}>
                     <Calculator size={28} color="#a5b4fc" />
                     <h2 style={{ fontSize: '1.75rem', background: 'linear-gradient(135deg, #a5b4fc, #c084fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                        3. 結算結果
+                        3. 結算結果 (HKD)
                     </h2>
                 </div>
 
@@ -131,11 +134,11 @@ export default function SettlementResult({ participants, expenses }) {
                                         background: b.net > 0 ? 'rgba(16, 185, 129, 0.15)' : b.net < 0 ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255,255,255,0.1)',
                                         color: b.net > 0 ? '#34d399' : b.net < 0 ? '#f87171' : 'var(--text-muted)'
                                     }}>
-                                        {b.net > 0.01 ? `應收回 $${b.net.toFixed(2)}` : b.net < -0.01 ? `需支付 $${Math.abs(b.net).toFixed(2)}` : '已結清'}
+                                        {b.net > 0.01 ? `應收回 HK$${b.net.toFixed(2)}` : b.net < -0.01 ? `需支付 HK$${Math.abs(b.net).toFixed(2)}` : '已結清'}
                                     </span>
                                 </div>
                                 <div className="subtitle" style={{ fontSize: '0.85rem', margin: 0, color: 'var(--text-muted)' }}>
-                                    已先付: ${b.paid.toFixed(2)} | 應分攤: ${b.share.toFixed(2)}
+                                    已先付: HK${b.paid.toFixed(2)} | 應分攤: HK${b.share.toFixed(2)}
                                 </div>
                             </div>
                         ))}
@@ -158,7 +161,7 @@ export default function SettlementResult({ participants, expenses }) {
                                             <ArrowRight size={18} color="var(--text-muted)" />
                                             <span style={{ fontWeight: 600, color: '#34d399', fontSize: '1.05rem' }}>{t.to}</span>
                                         </div>
-                                        <span style={{ fontWeight: 800, fontSize: '1.25rem', color: '#e2e8f0' }}>${t.amount.toFixed(2)}</span>
+                                        <span style={{ fontWeight: 800, fontSize: '1.25rem', color: '#e2e8f0' }}>HK${t.amount.toFixed(2)}</span>
                                     </div>
                                 </div>
                             ))}
